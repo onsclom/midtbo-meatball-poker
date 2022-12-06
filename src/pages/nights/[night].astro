@@ -29,7 +29,7 @@ const pokerNight = await pokerNights["/public/records/" + night + ".csv"]!();
 const bankerInfo: { [key: string]: any } = banker;
 const players = parseNight(
     pokerNight,
-    bankerInfo[night!].name,
+    bankerInfo[night!].banker,
     bankerInfo[night!].buyin
 );
 players.sort((a, b) => b.net - a.net);
@@ -63,6 +63,12 @@ players.sort((a, b) => b.net - a.net);
         }
         <p>
             <a href={`/records/${night}.csv`}>download csv</a>
+            <span
+                ><i
+                    >(some csvs are manually editted to include cash buy ins or
+                    fix mistakes)</i
+                >
+            </span>
         </p>
     </main>
 </Layout>

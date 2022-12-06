@@ -36,7 +36,7 @@ export function parseNight(
         );
       return {
         name: p,
-        buy: bankerName,
+        buyin: bankerBuyin,
         cashout: Math.max(0, bankerBuyin + totalBuyin - totalCashout),
         net: totalBuyin - totalCashout,
       };
