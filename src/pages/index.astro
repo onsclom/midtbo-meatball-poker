@@ -1,0 +1,29 @@
+---
+import Layout from "../layouts/Layout.astro";
+const pokerNights = import.meta.glob("/public/records/*.csv", {
+	as: "raw",
+});
+
+const nightNames = Object.keys(pokerNights).map((night) => {
+	const name = night.split("/").at(-1);
+	return name?.split(".")[0];
+});
+---
+
+<Layout title="Midtbo's Meatballs Poker">
+	<main>
+		<h1>Midtbo's Meatballs Poker Stats</h1>
+		<img src="/public/magnus-poker.jpg" />
+		<ul>
+			{
+				nightNames.reverse().map((night) => (
+					<li>
+						<a href={`/nights/${night}`}>{night}</a>
+					</li>
+				))
+			}
+		</ul>
+	</main>
+</Layout>
+
+<style></style>
