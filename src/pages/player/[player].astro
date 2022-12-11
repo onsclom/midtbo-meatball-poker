@@ -1,0 +1,68 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getPlayerNames, parseNight } from "../../scripts/poker-parser";
+import banker from "../nights/banker.json";
+
+const { player } = Astro.params;
+
+export async function getStaticPaths() {
+  const pokerNights = await import.meta.glob("/public/records/*.csv", {
+    as: "raw",
+  });
+  const nightCsvs = await Promise.all(
+    Object.keys(pokerNights).map(async (night) => await pokerNights[night]!())
+  );
+  const names = [
+    ...new Set([].concat(...nightCsvs.map((csv) => getPlayerNames(csv)))),
+  ];
+
+  return names.map((name) => ({
+    params: {
+      player: name,
+    },
+  }));
+}
+
+const pokerNights = await import.meta.glob("/public/records/*.csv", {
+  as: "raw",
+});
+
+const bankerInfo: { [key: string]: any } = banker;
+const nightsData = await Promise.all(
+  Object.keys(pokerNights).map(async (night) => {
+    const shortName = night.split("/").pop()!.split(".").shift()!;
+    const csv = await pokerNights[night]!();
+    return parseNight(
+      csv,
+      bankerInfo[shortName].banker,
+      bankerInfo[shortName].buyin
+    );
+  })
+);
+
+const playerData = nightsData
+  .map((nightData) => nightData.filter((p) => p.name === player))
+  .flat();
+
+console.log(playerData);
+
+let playerTotalData = {
+  player,
+  buyin: playerData.reduce((acc, data) => acc + data.buyin, 0),
+  cashout: playerData.reduce((acc, data) => acc + data.cashout, 0),
+  net: playerData.reduce((acc, data) => acc + data.net, 0),
+};
+
+console.log(playerTotalData);
+---
+
+<Layout title={`${player} Profile`}>
+  <main>
+    <h1><a href="../"> {"<-"}</a> {player}</h1>
+    <ul>
+      <li>${playerTotalData.net} net</li>
+      <li>${playerTotalData.buyin} bought in</li>
+      <li>${playerTotalData.cashout} cashed out</li>
+    </ul>
+  </main>
+</Layout>

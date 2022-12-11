@@ -1,24 +1,43 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getPlayerNames } from "../scripts/poker-parser";
+
 const pokerNights = import.meta.glob("/public/records/*.csv", {
 	as: "raw",
 });
 
-const nightNames = Object.keys(pokerNights).map((night) => {
-	const name = night.split("/").at(-1);
-	return name?.split(".")[0];
-});
+const nightData = await Promise.all(
+	Object.keys(pokerNights).map(async (night) => {
+		const name = night.split("/").at(-1)!.split(".")[0];
+		return {
+			name,
+			csv: await pokerNights[night]!(),
+		};
+	})
+);
 ---
 
 <Layout title="Midtbo's Meatballs Poker">
 	<main>
-		<h1>Midtbo's Meatballs Poker Stats</h1>
+		<h1>Poker Stats</h1>
 		<img src="/magnus-poker.jpg" />
 		<ul>
 			{
-				nightNames.reverse().map((night) => (
+				nightData.reverse().map((nightData) => (
 					<li>
-						<a href={`/nights/${night}`}>{night}</a>
+						<h3>
+							<a href={`/nights/${nightData.name}`}>{nightData.name}</a>
+						</h3>
+						<br />
+						<span>
+							{getPlayerNames(nightData.csv)
+								.sort()
+								.map((player) => (
+									<span>
+										<a href={`/player/${player}`}>{player}</a>
+									</span>
+								))}
+						</span>
 					</li>
 				))
 			}
@@ -26,4 +45,12 @@ const nightNames = Object.keys(pokerNights).map((night) => {
 	</main>
 </Layout>
 
-<style></style>
+<style>
+	img {
+		padding: 0 3rem 0 3rem;
+	}
+
+	h3 {
+		margin-bottom: 0rem;
+	}
+</style>
